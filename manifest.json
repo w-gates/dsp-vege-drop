@@ -1,0 +1,9 @@
+{
+  "name": "DSP_Vege_Drop",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/w-gates/dsp-vege-drop",
+  "description": "This mod will cause vegetaion, rocks, etc to be dropped as if mined whenever they are destroyed (by placing buldings, foundations, etc..). Easily toggle on/off with HUD button.",
+  "dependencies": [
+    "xiaoye97-BepInEx-5.4.17"
+  ]
+}
