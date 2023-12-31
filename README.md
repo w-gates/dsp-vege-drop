@@ -9,7 +9,7 @@ Ever get annoyed that you have to hand mine all the planets vegetation to get th
 Enable and disable loot drop functionality in-game with this toggle button on your HUD.
 ![Enable Disable Button image](https://raw.githubusercontent.com/w-gates/dsp-vege-drop/master/EnableDisableButton.jpg)
 
-If you like this mod, please click the thumbs up at the [top of the page](https://dsp.thunderstore.io/package/w-gates/DSP_Vege_Drop/) (next to the Total rating).  That would be a nice thank you for me, and help other people to find a mod you enjoy.
+If you like this mod, please click the thumbs up at the [top of the page](https://dsp.thunderstore.io/package/wgates/DSP_Vege_Drop/) (next to the Total rating).  That would be a nice thank you for me, and help other people to find a mod you enjoy.
 
 If you have issues with this mod, please report them on [GitHub](https://github.com/w-gates/dsp-vege-drop/issues).  You can also contact me at milamber#8441 on the [DSP Modding](https://discord.gg/XxhyTNte) Discord #tech-support channel.
 
@@ -44,7 +44,7 @@ This mod uses the BepInEx mod plugin framework.  So BepInEx must be installed to
 
 To manually install this mod, add the `DysonSphereVegeDrop.dll` to your `%PROGRAMFILES(X86)%\Steam\steamapps\common\Dyson Sphere Program\BepInEx\plugins\` folder.
 
-This mod can also be installed using ebkr's [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) mod manager by clicking "Install with Mod Manager" on the [DSP Modding](https://dsp.thunderstore.io/package/w-gates/DSP_Vege_Drop/) site.
+This mod can also be installed using ebkr's [r2modman](https://dsp.thunderstore.io/package/ebkr/r2modman/) mod manager by clicking "Install with Mod Manager" on the [DSP Modding](https://dsp.thunderstore.io/package/wgates/DSP_Vege_Drop/) site.
 
 ## Open Source
 The source code for this mod is available for download, review and forking on GitHub [here](https://github.com/w-gates/dsp-vege-drop) under the BSD 3 clause license.
