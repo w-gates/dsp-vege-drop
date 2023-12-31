@@ -38,6 +38,6 @@
     <Exec Command="echo $(TargetDir)&#xD;&#xA;echo $(TargetName)&#xD;&#xA;echo $(TargetFileName)" />
   </Target>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="COPY &quot;$(TargetDir)$(TargetFileName)&quot; &quot;C:\Users\Owner\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Jimmy\BepInEx\plugins\w-gates-DSP_Veg_Drop&quot;" />
+    <Exec Command="COPY &quot;$(TargetDir)$(TargetFileName)&quot; &quot;C:\Users\Owner\AppData\Roaming\r2modmanPlus-local\DysonSphereProgram\profiles\Jimmy\BepInEx\plugins\wgates-DSP_Vege_Drop&quot;" />
   </Target>
 </Project>
