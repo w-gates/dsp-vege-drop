@@ -21,6 +21,7 @@ using System.Security;
 using System.Reflection;
 using System.Security.Permissions;
 using NGPT;
+using System.Collections;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -63,6 +64,9 @@ namespace DysonSphereVegeDrop
         public static BepInEx.Configuration.ConfigEntry<bool> configEnableClearingPlanetPrairie;
         public static BepInEx.Configuration.ConfigEntry<bool> configEnableClearingPlanetRedStone;
         public static BepInEx.Configuration.ConfigEntry<bool> configEnableClearingPlanetVolcanicAsh;
+        public static Dictionary<String, String> planetTypeConfigMap;
+        public static Dictionary<String, String> configPlanetTypeMap;
+        public static HashSet<String> disabledPlanets = new HashSet<String>();
 
         public static BepInEx.Configuration.ConfigEntry<Color> configIconColor_enabled;
         public static BepInEx.Configuration.ConfigEntry<Color> configIconColor_disabled;
@@ -73,8 +77,43 @@ namespace DysonSphereVegeDrop
         {
             Logger = base.Logger;  // "C:\Program Files (x86)\Steam\steamapps\common\Dyson Sphere Program\BepInEx\LogOutput.log"
             Config = base.Config;
-            Logger.LogDebug("DSP Vege Drop: Awake.");
-            InitialConfigSetup();
+            Logger.LogDebug("Awake.");
+
+            try
+            {
+                planetTypeConfigMap = new Dictionary<String, String>()
+                {
+                    { "干旱荒漠", "IncludeAridDesert" },
+                    { "灰烬冻土", "IncludeAshenGelisol" },
+                    { "贫瘠荒漠", "IncludeBarrenDesert" },
+                    { "戈壁", "IncludeGobi" },
+                    { "冰原冻土", "IncludeIceFieldGelisol" },
+                    { "熔岩", "IncludeLava" },
+                    { "地中海", "IncludeMediterranean" },
+                    { "水世界", "IncludeOceanWorld" },
+                    { "海洋丛林", "IncludeOceanicJungle" },
+                    { "草原", "IncludePrairie" },
+                    { "红石", "IncludeRedStone" },
+                    { "火山灰", "IncludeVolcanicAsh" }
+                };
+                configPlanetTypeMap = planetTypeConfigMap.ToDictionary((i) => i.Value, (i) => i.Key);
+                Logger.LogDebug($"Awake: configPlanetTypeMap - {String.Join(",", configPlanetTypeMap.Select(x => "[" + x.Key + ": " + x.Value + "]"))}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Awake - Unable to create maps: {ex.Message}");
+                throw ex;
+            }
+
+            try
+            {
+                InitialConfigSetup();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Awake - Unable to set up config: {ex.Message}");
+                throw ex;
+            }
 
             try
             {
@@ -83,11 +122,11 @@ namespace DysonSphereVegeDrop
             }
             catch (Exception ex)
             {
-                Logger.LogDebug("DSP Vege Drop: Awake - Unable to patch.");
+                Logger.LogError($"Awake - Unable to patch: {ex.Message}");
                 throw ex;
             }
 
-            Logger.LogInfo("Initialization complete.");
+            Logger.LogInfo("Awake - Initialization complete.");
         }
 
         public enum Substate { NORMAL, PLANET };
@@ -172,35 +211,60 @@ namespace DysonSphereVegeDrop
 
         public void InitialConfigSetup()
         {
-            configEnableMod = Config.Bind<bool>("Config", "Enable", true, "Enable/disable vege drop mod.");
-            configEnableDebug = Config.Bind<bool>("Config", "EnableDebug", false, "Enabling debug will add more feedback to the BepInEx console.  This includes the reasons why drones are not clearing.");
+            try
+            {
+                configEnableMod = Config.Bind<bool>("Config", "Enable", true, "Enable/disable vege drop mod.");
+                configEnableDebug = Config.Bind<bool>("Config", "EnableDebug", false, "Enabling debug will add more feedback to the BepInEx console.  This includes the reasons why drones are not clearing.");
 
-            configEnableClearingItemTree = Config.Bind<bool>("Items", "IncludeTrees", true, "Enabling drop of trees.");
-            configEnableClearingItemStone = Config.Bind<bool>("Items", "IncludeStone", true, "Enabling drop of stones which can block the mecha's movement.");
-            configEnableClearingItemDetail = Config.Bind<bool>("Items", "IncludePebbles", false, "Enabling drop of tiny stones which won't block the mecha's movement.");
-            configEnableClearingItemIce = Config.Bind<bool>("Items", "IncludeIce", true, "Enabling drop of ice.");
-            configDisableClearingItemIds_StringConfigEntry = Config.Bind<string>("Items", "DisableItemIds", "", "Disable drop of specific vege proto IDs.  String is a comma-separated list of shorts.  This mod will print to the debug console all vege proto IDs which are mined so you can see what IDs you're mining.  See README for this mod for more information.");
+                configEnableClearingItemTree = Config.Bind<bool>("Items", "IncludeTrees", true, "Enabling drop of trees.");
+                configEnableClearingItemStone = Config.Bind<bool>("Items", "IncludeStone", true, "Enabling drop of stones which can block the mecha's movement.");
+                configEnableClearingItemDetail = Config.Bind<bool>("Items", "IncludePebbles", false, "Enabling drop of tiny stones which won't block the mecha's movement.");
+                configEnableClearingItemIce = Config.Bind<bool>("Items", "IncludeIce", true, "Enabling drop of ice.");
+                configDisableClearingItemIds_StringConfigEntry = Config.Bind<string>("Items", "DisableItemIds", "", "Disable drop of specific vege proto IDs.  String is a comma-separated list of shorts.  This mod will print to the debug console all vege proto IDs which are mined so you can see what IDs you're mining.  See README for this mod for more information.");
 
-            configEnableClearingPlanetAridDesert = Config.Bind<bool>("Planets", "IncludeAridDesert", true, "Enable drop on arid desert planets.");
-            configEnableClearingPlanetAshenGelisol = Config.Bind<bool>("Planets", "IncludeAshenGelisol", true, "Enable drop on ashen gelisol planets.");
-            configEnableClearingPlanetBarrenDesert = Config.Bind<bool>("Planets", "IncludeBarrenDesert", true, "Enable drop on barren desert planets.");
-            configEnableClearingPlanetGobi = Config.Bind<bool>("Planets", "IncludeGobi", true, "Enable drop on gobi planets.");
-            configEnableClearingPlanetIceFieldGelisol = Config.Bind<bool>("Planets", "IncludeIceFieldGelisol", true, "Enable drop on ice field gelisol planets.");
-            configEnableClearingPlanetLava = Config.Bind<bool>("Planets", "IncludeLava", true, "Enable drop on lava planets.");
-            configEnableClearingPlanetMediterranean = Config.Bind<bool>("Planets", "IncludeMediterranean", true, "Enable drop on mediterranean planets.");
-            configEnableClearingPlanetOceanWorld = Config.Bind<bool>("Planets", "IncludeOceanWorld", true, "Enable drop on ocean world planets.");
-            configEnableClearingPlanetOceanicJungle = Config.Bind<bool>("Planets", "IncludeOceanicJungle", true, "Enable drop on oceanic jungle planets.");
-            configEnableClearingPlanetPrairie = Config.Bind<bool>("Planets", "IncludePrairie", true, "Enable drop on prairie planets.");
-            configEnableClearingPlanetRedStone = Config.Bind<bool>("Planets", "IncludeRedStone", true, "Enable drop on red stone (mushroom) planets.");
-            configEnableClearingPlanetVolcanicAsh = Config.Bind<bool>("Planets", "IncludeVolcanicAsh", true, "Enable drop on volcanic ash planets.");
+                configEnableClearingPlanetAridDesert = Config.Bind<bool>("Planets", "IncludeAridDesert", true, "Enable drop on arid desert planets.");
+                configEnableClearingPlanetAshenGelisol = Config.Bind<bool>("Planets", "IncludeAshenGelisol", true, "Enable drop on ashen gelisol planets.");
+                configEnableClearingPlanetBarrenDesert = Config.Bind<bool>("Planets", "IncludeBarrenDesert", true, "Enable drop on barren desert planets.");
+                configEnableClearingPlanetGobi = Config.Bind<bool>("Planets", "IncludeGobi", true, "Enable drop on gobi planets.");
+                configEnableClearingPlanetIceFieldGelisol = Config.Bind<bool>("Planets", "IncludeIceFieldGelisol", true, "Enable drop on ice field gelisol planets.");
+                configEnableClearingPlanetLava = Config.Bind<bool>("Planets", "IncludeLava", true, "Enable drop on lava planets.");
+                configEnableClearingPlanetMediterranean = Config.Bind<bool>("Planets", "IncludeMediterranean", true, "Enable drop on mediterranean planets.");
+                configEnableClearingPlanetOceanWorld = Config.Bind<bool>("Planets", "IncludeOceanWorld", true, "Enable drop on ocean world planets.");
+                configEnableClearingPlanetOceanicJungle = Config.Bind<bool>("Planets", "IncludeOceanicJungle", true, "Enable drop on oceanic jungle planets.");
+                configEnableClearingPlanetPrairie = Config.Bind<bool>("Planets", "IncludePrairie", true, "Enable drop on prairie planets.");
+                configEnableClearingPlanetRedStone = Config.Bind<bool>("Planets", "IncludeRedStone", true, "Enable drop on red stone (mushroom) planets.");
+                configEnableClearingPlanetVolcanicAsh = Config.Bind<bool>("Planets", "IncludeVolcanicAsh", true, "Enable drop on volcanic ash planets.");
 
-            configIconColor_enabled = Config.Bind<Color>("IconColors", "EnabledNormal", Color.green, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when this mod is enabled."));
-            configIconColor_disabled = Config.Bind<Color>("IconColors", "Disabled", Color.grey, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when this mod is disabled."));
-            configIconColor_planet = Config.Bind<Color>("IconColors", "PausedPlanet", Color.green, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when drop is paused on the current planet type per configuration.  See configuration settings for planets."));
+                configIconColor_enabled = Config.Bind<Color>("IconColors", "EnabledNormal", Color.green, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when this mod is enabled."));
+                configIconColor_disabled = Config.Bind<Color>("IconColors", "Disabled", Color.grey, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when this mod is disabled."));
+                configIconColor_planet = Config.Bind<Color>("IconColors", "PausedPlanet", Color.green, new BepInEx.Configuration.ConfigDescription("The color of the drop icon when drop is paused on the current planet type per configuration.  See configuration settings for planets."));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"InitialConfigSetup - Bind Config: {ex.Message}");
+                throw ex;
+            }
 
-            OnConfigReload();
-            Config.ConfigReloaded += OnConfigReload;
-            Config.SettingChanged += OnConfigSettingChanged;
+            try
+            {
+                OnConfigReload();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"InitialConfigSetup - OnConfigReload: {ex.Message}");
+                throw ex;
+            }
+
+            try
+            {
+                Config.ConfigReloaded += OnConfigReload;
+                Config.SettingChanged += OnConfigSettingChanged;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"InitialConfigSetup - Bind Config Callbacks: {ex.Message}");
+                throw ex;
+            }
         }
 
         public static void OnConfigReload(object sender, EventArgs e)
@@ -210,9 +274,45 @@ namespace DysonSphereVegeDrop
 
         public static void OnConfigReload()
         {
-            OnConfigDisableItemIdsChanged();
-            OnConfigEnableChanged();
-            OnConfigIconColorChanged();
+            try
+            {
+                OnConfigDisableItemIdsChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OnConfigReload - OnConfigDisableItemIdsChanged: {ex.Message}");
+                throw ex;
+            }
+
+            try
+            {
+                OnConfigEnableChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OnConfigReload - OnConfigEnableChanged: {ex.Message}");
+                throw ex;
+            }
+
+            try
+            {
+                OnConfigIconColorChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OnConfigReload - OnConfigIconColorChanged: {ex.Message}");
+                throw ex;
+            }
+
+            try
+            {
+                OnConfigDisablePlanetsChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OnConfigReload - OnConfigDisablePlanetsChanged: {ex.Message}");
+                throw ex;
+            }
 
             Logger.LogInfo("Configuration loaded.");
         }
@@ -223,6 +323,10 @@ namespace DysonSphereVegeDrop
             if (changedSetting.Section == "Config" && changedSetting.Key == "Enable")
             {
                 OnConfigEnableChanged();
+            }
+            else if (changedSetting.Section == "Planets")
+            {
+                OnConfigDisablePlanetsChanged();
             }
             else if (changedSetting.Section == "Items" && changedSetting.Key == "DisableItemIds")
             {
@@ -245,6 +349,53 @@ namespace DysonSphereVegeDrop
 
                 enableDisableButton.GetComponent<UIButton>().tips.tipTitle = configEnableMod.Value ? "Vege Drop Enabled" : "Vege Drop Disabled";
                 UpdateTipText("");
+            }
+        }
+
+        public static void OnConfigDisablePlanetsChanged()
+        {
+            try
+            {
+                if (configEnableDebug.Value)
+                {
+                    Logger.LogDebug($"OnConfigDisablePlanetsChanged: disabledPlanets - Before Config Change.");
+                    Logger.LogDebug($"OnConfigDisablePlanetsChanged: disabledPlanets - {String.Join(",", disabledPlanets)}");
+                }
+                disabledPlanets.Clear();
+                if (!configEnableClearingPlanetAridDesert.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetAridDesert.Definition.Key]);
+                if (!configEnableClearingPlanetAshenGelisol.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetAshenGelisol.Definition.Key]);
+                if (!configEnableClearingPlanetBarrenDesert.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetBarrenDesert.Definition.Key]);
+                if (!configEnableClearingPlanetGobi.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetGobi.Definition.Key]);
+                if (!configEnableClearingPlanetIceFieldGelisol.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetIceFieldGelisol.Definition.Key]);
+                if (!configEnableClearingPlanetLava.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetLava.Definition.Key]);
+                if (!configEnableClearingPlanetMediterranean.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetMediterranean.Definition.Key]);
+                if (!configEnableClearingPlanetOceanWorld.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetOceanWorld.Definition.Key]);
+                if (!configEnableClearingPlanetOceanicJungle.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetOceanicJungle.Definition.Key]);
+                if (!configEnableClearingPlanetPrairie.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetPrairie.Definition.Key]);
+                if (!configEnableClearingPlanetRedStone.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetRedStone.Definition.Key]);
+                if (!configEnableClearingPlanetVolcanicAsh.Value)
+                    disabledPlanets.Add(configPlanetTypeMap[configEnableClearingPlanetVolcanicAsh.Definition.Key]);
+                if (configEnableDebug.Value)
+                {
+                    Logger.LogDebug($"OnConfigDisablePlanetsChanged: disabledPlanets - After Config Change.");
+                    Logger.LogDebug($"OnConfigDisablePlanetsChanged: disabledPlanets - {String.Join(",", disabledPlanets)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OnConfigDisablePlanetsChanged: {ex.Message}");
+                throw ex;
             }
         }
 
@@ -313,18 +464,7 @@ namespace DysonSphereVegeDrop
             // Using DisplayName because it should be the same string regardless of translation.
             // Translations are stored in Resources\prototypes\StringProtoSet.asset
             string planetThemeName = LDB.themes.Select(__instance.planet.theme).DisplayName;
-            if ((!configEnableClearingPlanetAridDesert.Value && planetThemeName == "干旱荒漠") ||  // Arid desert; PlanetType: 3 (Desert)
-                (!configEnableClearingPlanetAshenGelisol.Value && planetThemeName == "灰烬冻土") ||  // Ashen gelisol; PlanetType: 3 (Desert)
-                (!configEnableClearingPlanetBarrenDesert.Value && planetThemeName == "贫瘠荒漠") ||  // Barren desert; PlanetType: 3 (Desert)
-                (!configEnableClearingPlanetGobi.Value && planetThemeName == "戈壁") ||  // Gobi; PlanetType: 3 (Desert)
-                (!configEnableClearingPlanetIceFieldGelisol.Value && planetThemeName == "冰原冻土") ||  // Ice field gelisol; PlanetType: 4 (Ice)
-                (!configEnableClearingPlanetLava.Value && planetThemeName == "熔岩") ||  // Lava; PlanetType: 1 (Vocano)
-                (!configEnableClearingPlanetMediterranean.Value && planetThemeName == "地中海") ||  // Mediterranean; PlanetType: 2 (Ocean)
-                (!configEnableClearingPlanetOceanWorld.Value && planetThemeName == "水世界") ||  // Ocean world; PlanetType: 2 (Ocean)
-                (!configEnableClearingPlanetOceanicJungle.Value && planetThemeName == "海洋丛林") ||  // Oceanic jungle; PlanetType: 2 (Ocean)
-                (!configEnableClearingPlanetPrairie.Value && planetThemeName == "草原") ||  // Prairie; PlanetType: 2 (Ocean)
-                (!configEnableClearingPlanetRedStone.Value && planetThemeName == "红石") ||  // Red stone; PlanetType: 2 (Ocean)
-                (!configEnableClearingPlanetVolcanicAsh.Value && planetThemeName == "火山灰"))  // Volcanic ash; PlanetType: 1 (Vocano)
+            if (disabledPlanets.Contains(planetThemeName))
             {
                 if (configEnableDebug.Value)
                 {
@@ -424,7 +564,7 @@ namespace DysonSphereVegeDrop
             {
                 Logger.LogDebug("DSP Drone Clearing - Calling: GameScenarioLogic_NotifyOnVegetableMined_Prefix");
                 VegeProto vegeProto = LDB.veges.Select(protoId);
-                Logger.LogDebug($"Mined proto ID {protoId} (" + vegeProto.Name.Translate() + ")");
+                Logger.LogDebug($"Mined proto ID {protoId} (" + vegeProto.Name + ": " + vegeProto.Name.Translate() + ")");
             }
         }
     }
