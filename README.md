@@ -1,5 +1,8 @@
 # Vege Drop for Dyson Sphere Program
 
+# Deprecated
+**This mod is now deprecated. I wrote it to replace [DSP Drone Clearing](https://dsp.thunderstore.io/package/GreyHak/DSP_Drone_Clearing/); [LaserClearing](https://dsp.thunderstore.io/package/starfi5h/LaserClearing/) was then released by starfi5h which I prefer. I will probably not update this one.**
+
 **DSP Vege Drop** is a mod for the Unity game Dyson Sphere Program developed by Youthcat Studio and published by Gamera Game.  The game is available on [here](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/).
 
 This mod will cause vegetation, rocks, etc to drop loot as if mined whenever they are destroyed (by placing buildings, foundations, etc..). Items are dropped as litter if inventory is full. Hand mining drops extra items vs when the vege are destroyed.
