@@ -50,6 +50,8 @@ This mod can also be installed using ebkr's [r2modman](https://dsp.thunderstore.
 The source code for this mod is available for download, review and forking on GitHub [here](https://github.com/w-gates/dsp-vege-drop) under the BSD 3 clause license.
 
 ## Change Log
+### Unreleased
+ - Optimized check for disabled planets.
 ### v1.0.0
  - Initial release.
 
