@@ -2,7 +2,7 @@
 
 **DSP Vege Drop** is a mod for the Unity game Dyson Sphere Program developed by Youthcat Studio and published by Gamera Game.  The game is available on [here](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/).
 
-This mod will cause vegetation, rocks, etc to dropped loot as if mined whenever they are destroyed (by placing buildings, foundations, etc..). Items are dropped as litter if inventory is full. Hand mining drops extra items vs when the vege are destroyed.
+This mod will cause vegetation, rocks, etc to drop loot as if mined whenever they are destroyed (by placing buildings, foundations, etc..). Items are dropped as litter if inventory is full. Hand mining drops extra items vs when the vege are destroyed.
 
 Ever get annoyed that you have to hand mine all the planets vegetation to get the resources?  This mod is for you.
 
