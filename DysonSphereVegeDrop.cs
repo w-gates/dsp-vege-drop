@@ -541,7 +541,7 @@ namespace DysonSphereVegeDrop
 
             if (configEnableDebug.Value)
             {
-                Logger.LogDebug($"Dropped proto ID {vegeProto.ID} (" + vegeProto.Name.Translate() + ")");
+                Logger.LogDebug($"Dropped proto ID {vegeProto.ID} (" + vegeProto.Name + ": " + vegeProto.Name.Translate() + ")");
             }
         }
 
